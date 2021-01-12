@@ -39,6 +39,9 @@ def player_shotzonedetail(player_name, season_id, season_type):
 
     #Empty dictionary that'll store info on if each zone is a hot or cold one for the player.
     zone_colors = []
+    #Empty dictionary that'll store the difference between the player and the league average efficiency for each zone.
+    zone_difference = []
+
     #Goes through every shot attempt, find if it's a make or a miss, and determines which shot zone it falls under.
     for zone in shot_zones_dict:
         made = 0
@@ -54,20 +57,35 @@ def player_shotzonedetail(player_name, season_id, season_type):
             avg = (made/(made+miss))
         except ZeroDivisionError: 
             avg = 0
-
-       #Compares player efficiency with league average efficiency and determines whether each zone is a hot or cold one for the player.
+        
+       #Compares player efficiency with league average efficiency and determines whether each zone is a hot or cold one for the player and by how much.
         if avg > (league_stats[zone[0]][6]):
             zone_colors.append("red")
+            difference = (avg - league_stats[zone[0]][6]) * 10
+            if difference > 1:
+                difference = 1
+            elif difference < 0.1:
+                difference = 0.1
+            zone_difference.append(difference)
+        
         elif avg < (league_stats[zone[0]][6]):
             zone_colors.append("blue")
+            difference = (league_stats[zone[0]][6] - avg) * 10
+            if difference > 1:
+                difference = 1
+            elif difference < 0.1:
+                difference = 0.1
+            zone_difference.append(difference)
+        
         elif avg == (league_stats[zone[0]][6]):
             zone_colors.append("gray")
+            zone_difference.append(1)
     
     #Returns a player's hot & cold zones.
-    return zone_colors
+    return zone_colors, zone_difference
 
 #Function that draws court and plots a player's hot and cold zones.
-def draw_court(graphic, color, lw, outer_lines, zone_colors, xlim=(-250, 250), ylim=(422.5, -47.5),flip_court=False):
+def draw_court(graphic, color, lw, outer_lines, zone_colors, zone_diff, xlim=(-250, 250), ylim=(422.5, -47.5),flip_court=False):
     if graphic is None:
         graphic = plt.gca()
     
@@ -99,36 +117,36 @@ def draw_court(graphic, color, lw, outer_lines, zone_colors, xlim=(-250, 250), y
 
     #Zone Elements
     one =  Polygon      ([[80,225],[-80,225],[-122.5,422.5],[122.5,422.5]],
-                        fill=True, color=zone_colors[0],alpha=0.5)
+                        fill=True, color=zone_colors[0],alpha=zone_diff[0])
     two = Polygon       ([[-250,92.5],[-250,422.5],[-122.5,422.5],[-80,225],[-220,92.5]], 
-                        fill=True, color=zone_colors[1],alpha=0.5)
+                        fill=True, color=zone_colors[1],alpha=zone_diff[1])
     three = Polygon     ([[250,92.5],[250,422.5],[122.5,422.5],[80,225],[220,92.5]], 
-                        fill=True, color=zone_colors[2],alpha=0.5)
+                        fill=True, color=zone_colors[2],alpha=zone_diff[2])
     nine = Polygon      ([[-250,-47.5],[-250,92.5],[-220,92.5],[-220,-47.5]], 
-                        fill=True, color=zone_colors[3],alpha=0.5)
+                        fill=True, color=zone_colors[3],alpha=zone_diff[3])
     ten = Polygon       ([[-82.5,145],[82.5,145],[45,70],[-45,70]], 
-                        fill=True, color=zone_colors[4],alpha=0.5)
+                        fill=True, color=zone_colors[4],alpha=zone_diff[4])
     eleven = Polygon    ([[-85,225],[85,225],[80,145],[-80,145]], 
-                        fill=True, color=zone_colors[5],alpha=0.5)
+                        fill=True, color=zone_colors[5],alpha=zone_diff[5])
     twelve = Polygon    ([[-85,225],[-210,100],[-150,58],[-80,145]], 
-                        fill=True, color=zone_colors[6],alpha=0.5)
+                        fill=True, color=zone_colors[6],alpha=zone_diff[6])
     thirteen = Polygon  ([[-220,-47.5],[-150,-47.5],[-150,60],[-210,100],[-220,92.5]], 
-                        fill=True, color=zone_colors[7],alpha=0.5) 
+                        fill=True, color=zone_colors[7],alpha=zone_diff[7]) 
     fourteen = Polygon  ([[-150,60],[-82.5,145],[-45,70],[-80,20],[-80,-47.5],[-150,-47.5]], 
-                        fill=True, color=zone_colors[8],alpha=0.5)
+                        fill=True, color=zone_colors[8],alpha=zone_diff[8])
     fifteen = Polygon   ([[85,225],[210,100],[150,58],[80,145]],
-                        fill=True, color=zone_colors[9],alpha=0.5)
+                        fill=True, color=zone_colors[9],alpha=zone_diff[9])
     sixteen = Polygon   ([[220,-47.5],[150,-47.5],[150,60],[210,100],[220,92.5]], 
-                        fill=True, color=zone_colors[10],alpha=0.5)
+                        fill=True, color=zone_colors[10],alpha=zone_diff[10])
     seventeen = Polygon ([[150,60],[82.5,145],[45,70],[80,20],[80,-47.5],[150,-47.5]], 
-                        fill=True, color=zone_colors[11],alpha=0.5)
-    eighteen = Circle   ((0, 0), 80, color=zone_colors[12],alpha=0.5)
+                        fill=True, color=zone_colors[11],alpha=zone_diff[11])
+    eighteen = Circle   ((0, 0), 80, color=zone_colors[12], alpha=zone_diff[12])
     nineteen = Polygon  ([[250,-47.5],[250,92.5],[220,92.5],[220,-47.5]], 
-                        fill=True, color=zone_colors[13],alpha=0.5)
+                        fill=True, color=zone_colors[13],alpha=zone_diff[13])
 
     #All elements to be plotted on the graphic.
-    final_court = [hoop, backboard, paint_outer_box, paint_inner_box, top_ft, bottom_ft, restricted, corner_three_left, corner_three_right, three_arc, mid_outer_arc, mid_inner_arc,
-            one, two, three, nine, ten, eleven, twelve, thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen]
+    final_court = [ one, two, three, nine, ten, eleven, twelve, thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen,
+                    hoop, backboard, paint_outer_box, paint_inner_box, top_ft, bottom_ft, restricted, corner_three_left, corner_three_right, three_arc, mid_outer_arc, mid_inner_arc]
 
     if outer_lines:
         outer_lines = Rectangle((-250, -47.5), 500, 470, linewidth=lw, color=color, fill=False)
@@ -141,6 +159,8 @@ def draw_court(graphic, color, lw, outer_lines, zone_colors, xlim=(-250, 250), y
     return graphic
 
 if __name__ == "__main__":
+
+    #Asks user for player info.
     player_name = input ("Enter full player name: ")
     season_id = input ("Input season in format (####-##): ")
     season_type = input ("Regular Season (R) or Playoffs (P): ")
@@ -149,7 +169,11 @@ if __name__ == "__main__":
     elif season_type == 'P':
         season_type = 'Playoffs'
 
+    #Generates title.
     title = player_name + ' Hot Zones ' + season_id + ' ' + season_type
 
-    draw_court(None, 'black', 2, False, player_shotzonedetail(player_name, season_id, season_type))
+    zone_colors = player_shotzonedetail(player_name, season_id, season_type)[0]
+    zone_difference = player_shotzonedetail(player_name, season_id, season_type)[1]
+
+    draw_court(None, 'black', 2, False, zone_colors, zone_difference)
     plt.show()
