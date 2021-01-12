@@ -1,3 +1,3 @@
 # nba-player-hot-zones
 
-Program that uses pandas dataframes & the matplotlib tool to take info on NBA players' shot attempts and determine whether the player is shooting above or below league average from various areas of the court.
+Python program that utilizes pandas dataframes & matplotlib graphics to take info on NBA players’ shot attempts and compare their stats with league average stats from various areas of the court.
