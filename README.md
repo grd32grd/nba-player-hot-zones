@@ -5,3 +5,6 @@ The comparison is done in a visual manner that illustrates how well the player i
 Red represents above-average areas(AKA areas where they may be 'hot' from), whereas blue represents below-average areas.
 The transparency of each section represent just how far ahead/behind they are in regards to the rest of the league.
 
+# To Do List
+List all imports so that any user will know what's required to run the program.
+

@@ -10,13 +10,14 @@ from nba_api.stats.static import players
 from nba_api.stats.endpoints import shotchartdetail
 from nba_api.stats.endpoints import playercareerstats
 
-#Makes sure that the entire dataframe is displayed.
+#Dataframe sizing.
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
 #Function that takes in basic player info, calculates individual and league average stats, and returns a player's hot and cold zones.
 def player_shotzonedetail(player_name, season_id, season_type):
+
     #States basic info about player (name, id, retired or active)
     player_dict = [player for player in players.get_players() if player['full_name'] == player_name][0]
 
@@ -49,13 +50,13 @@ def player_shotzonedetail(player_name, season_id, season_type):
         miss = 0
         for shot in range(len(player_stats)):
             if (player_stats[shot][20] == 1) and (zone[1] in player_stats[shot][14]) and (zone[2] in player_stats[shot][15]):
-                made+=1
+                made +=1
             elif (player_stats[shot][20] == 0) and (zone[1] in player_stats[shot][14]) and (zone[2] in player_stats[shot][15]):
-                miss+=1
+                miss +=1
             
        #Scenario in which player has attempt zero shots from a specific zone.    
         try:
-            avg = (made/(made+miss))
+            avg = ( made / (made + miss) )
         except ZeroDivisionError: 
             avg = 0
         
@@ -173,8 +174,10 @@ if __name__ == "__main__":
     #Generates title.
     title = player_name + ' Hot Zones ' + season_id + ' ' + season_type
 
-    zone_colors = player_shotzonedetail(player_name, season_id, season_type)[0]
-    zone_difference = player_shotzonedetail(player_name, season_id, season_type)[1]
+    #Obtains our statistical data.
+    zone_colors = player_shotzonedetail (player_name, season_id, season_type)[0]
+    zone_difference = player_shotzonedetail (player_name, season_id, season_type)[1]
 
+    #Draws our court.
     draw_court(None, 'black', 2, False, zone_colors, zone_difference)
     plt.show()
