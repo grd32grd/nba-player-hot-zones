@@ -1,4 +1,6 @@
 #Imports
+import tkinter as tk
+from tkinter import ttk
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -27,17 +29,31 @@ def player_shotzonedetail(player_name, season_id, season_type):
 
     team_id = career_dataframe[career_dataframe['SEASON_ID'] == season_id]['TEAM_ID']
 
-    shotchartlist = shotchartdetail.ShotChartDetail(team_id = int(team_id), player_id = int(player_dict['id']), season_type_all_star = season_type, season_nullable = season_id, context_measure_simple = "FGA").get_data_frames()
+    shot_chart_list = shotchartdetail.ShotChartDetail(team_id = int(team_id), player_id = int(player_dict['id']), season_type_all_star = season_type, season_nullable = season_id, context_measure_simple = "FGA").get_data_frames()
 
     #Dataframe of a a player's every shot attempt in a season.                                      
-    player_stats = np.array(shotchartlist[0])
+    player_stats = np.array(shot_chart_list[0])
 
     #Dataframe of the league average percentage per shot zone.
-    league_stats = np.array(shotchartlist[1])
+    league_stats = np.array(shot_chart_list[1])
 
-    #Dictionary of the 14 shot zones recognized by nba.com/stats [ID, side of court, distance from hoop]
-    shot_zones_dict = [ [1,'(C)','24+'],[2,'(LC)','24+'],[3,'(RC)','24+'],[9,'(L)','24+'],[10,'(C)','8-16'],[11,'(C)','16-24'],[12,'(LC)','16-24'],
-    [13,'(L)','16-24'],[14,'(L)','8-16'],[15,'(RC)','16-24'],[16,'(R)','16-24'],[17,'(R)','8-16'],[18,'(C)','Less'],[19,'(R)','24+'] ]
+    #Array of dictionaries representing the the 14 shot zones recognized by nba.com/stats [ID, side of court, distance from hoop]
+    shot_zones_dict = [
+        {'id': 1, 'side': '(C)', 'distance': '24+'},
+        {'id': 2, 'side': '(LC)', 'distance': '24+'},
+        {'id': 3, 'side': '(RC)', 'distance': '24+'},
+        {'id': 9, 'side': '(L)', 'distance': '24+'},
+        {'id': 10, 'side': '(C)', 'distance': '8-16'},
+        {'id': 11, 'side': '(C)', 'distance': '16-24'},
+        {'id': 12, 'side': '(LC)', 'distance': '16-24'},
+        {'id': 13, 'side': '(L)', 'distance': '16-24'},
+        {'id': 14, 'side': '(L)', 'distance': '8-16'},
+        {'id': 15, 'side': '(RC)', 'distance': '16-24'},
+        {'id': 16, 'side': '(R)', 'distance': '16-24'},
+        {'id': 17, 'side': '(R)', 'distance': '8-16'},
+        {'id': 18, 'side': '(C)', 'distance': 'Less'},
+        {'id': 19, 'side': '(R)', 'distance': '24+'}
+    ]
 
     #Empty dictionary that'll store info on if each zone is a hot or cold one for the player.
     zone_colors = []
@@ -45,14 +61,14 @@ def player_shotzonedetail(player_name, season_id, season_type):
     zone_difference = []
 
     #Goes through every shot attempt, find if it's a make or a miss, and determines which shot zone it falls under.
-    for zone in shot_zones_dict:
+    for shot_zone in shot_zones_dict:
         made = 0
         miss = 0
         for shot in range(len(player_stats)):
-            if (player_stats[shot][20] == 1) and (zone[1] in player_stats[shot][14]) and (zone[2] in player_stats[shot][15]):
-                made +=1
-            elif (player_stats[shot][20] == 0) and (zone[1] in player_stats[shot][14]) and (zone[2] in player_stats[shot][15]):
-                miss +=1
+            if (player_stats[shot][20] == 1) and (shot_zone['side'] in player_stats[shot][14]) and (shot_zone['distance'] in player_stats[shot][15]):
+                made += 1
+            elif (player_stats[shot][20] == 0) and (shot_zone['side'] in player_stats[shot][14]) and (shot_zone['distance'] in player_stats[shot][15]):
+                miss += 1
             
        #Scenario in which player has attempt zero shots from a specific zone.    
         try:
@@ -61,25 +77,25 @@ def player_shotzonedetail(player_name, season_id, season_type):
             avg = 0
         
        #Compares player efficiency with league average efficiency and determines whether each zone is a hot or cold one for the player and by how much.
-        if avg > (league_stats[zone[0]][6]):
+        if avg > (league_stats[shot_zone['id']][6]):
             zone_colors.append("red")
-            difference = (avg - league_stats[zone[0]][6]) * 10
+            difference = (avg - league_stats[shot_zone['id']][6]) * 10
             if difference > 1:
                 difference = 1
             elif difference < 0.1:
                 difference = 0.1
             zone_difference.append(difference)
         
-        elif avg < (league_stats[zone[0]][6]):
+        elif avg < (league_stats[shot_zone['id']][6]):
             zone_colors.append("blue")
-            difference = (league_stats[zone[0]][6] - avg) * 10
+            difference = (league_stats[shot_zone['id']][6] - avg) * 10
             if difference > 1:
                 difference = 1
             elif difference < 0.1:
                 difference = 0.1
             zone_difference.append(difference)
         
-        elif avg == (league_stats[zone[0]][6]):
+        else:
             zone_colors.append("gray")
             zone_difference.append(1)
     
@@ -101,7 +117,6 @@ def draw_court(graphic, color, lw, outer_lines, zone_colors, zone_diff, xlim=(-2
 
     #Sets up the labels for the matplotlib graphic.
     graphic.tick_params(labelbottom="off", labelleft="off")
-    graphic.set_title(title, fontsize=10)
 
     #Court Elements
     hoop = Circle((0,0), radius=7.5, linewidth=lw, color=color, fill=False)
@@ -160,24 +175,44 @@ def draw_court(graphic, color, lw, outer_lines, zone_colors, zone_diff, xlim=(-2
     
     return graphic
 
-if __name__ == "__main__":
-
-    #Asks user for player info.
-    player_name = input ("Enter full player name: ")
-    season_id = input ("Input season in format (####-##): ")
-    season_type = input ("Regular Season (R) or Playoffs (P): ")
-    if season_type == 'R':
-        season_type = 'Regular Season'
-    elif season_type == 'P':
-        season_type = 'Playoffs'
-
-    #Generates title.
-    title = player_name + ' Hot Zones ' + season_id + ' ' + season_type
+#Takes in user input and generates corresponding graphic
+def generate_graphic():
+    player_name = player_name_entry.get()
+    season_id = season_id_entry.get()
+    season_type = season_type_combobox.get()
 
     #Obtains our statistical data.
-    zone_colors = player_shotzonedetail (player_name, season_id, season_type)[0]
-    zone_difference = player_shotzonedetail (player_name, season_id, season_type)[1]
+    zone_colors, zone_difference = player_shotzonedetail(player_name, season_id, season_type)
 
     #Draws our court.
     draw_court(None, 'black', 2, False, zone_colors, zone_difference)
+    plt.title(f"{player_name} Hot Zones {season_id} {season_type}")
     plt.show()
+
+
+#Main window
+root = tk.Tk()
+root.title("Player Hot Zones")
+
+#Player info inputs
+player_name_label = ttk.Label(root, text="Player Name:")
+player_name_label.grid(row=0, column=0, padx=5, pady=5)
+player_name_entry = ttk.Entry(root)
+player_name_entry.grid(row=0, column=1, padx=5, pady=5)
+
+season_id_label = ttk.Label(root, text="Season ID:")
+season_id_label.grid(row=1, column=0, padx=5, pady=5)
+season_id_entry = ttk.Entry(root)
+season_id_entry.grid(row=1, column=1, padx=5, pady=5)
+
+season_type_label = ttk.Label(root, text="Season Type:")
+season_type_label.grid(row=2, column=0, padx=5, pady=5)
+season_type_combobox = ttk.Combobox(root, values=["Regular Season", "Playoffs"])
+season_type_combobox.grid(row=2, column=1, padx=5, pady=5)
+season_type_combobox.current(0)
+
+generate_button = ttk.Button(root, text="Generate Plot", command=generate_graphic)
+generate_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
+
+#Running the GUI
+root.mainloop()
