@@ -12,10 +12,17 @@ from nba_api.stats.static import players
 from nba_api.stats.endpoints import shotchartdetail
 from nba_api.stats.endpoints import playercareerstats
 
+
 #Dataframe sizing.
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
+
+
+#Function that fetches the list of all active NBA players' names.
+def get_player_names():
+    active_players = [player for player in players.get_players() if player['is_active']]
+    return [player['full_name'] for player in active_players]
 
 #Function that takes in basic player info, calculates individual and league average stats, and returns a player's hot and cold zones.
 def player_shotzonedetail(player_name, season_id, season_type):
@@ -175,9 +182,9 @@ def draw_court(graphic, color, lw, outer_lines, zone_colors, zone_diff, xlim=(-2
     
     return graphic
 
-#Takes in user input and generates corresponding graphic
+#Function that takes in user input and generates the corresponding graphic.
 def generate_graphic():
-    player_name = player_name_entry.get()
+    player_name = player_name_combobox.get()
     season_id = season_id_entry.get()
     season_type = season_type_combobox.get()
 
@@ -195,10 +202,11 @@ root = tk.Tk()
 root.title("Player Hot Zones")
 
 #Player info inputs
-player_name_label = ttk.Label(root, text="Player Name:")
+player_name_label = ttk.Label(root, text="Select Player:")
 player_name_label.grid(row=0, column=0, padx=5, pady=5)
-player_name_entry = ttk.Entry(root)
-player_name_entry.grid(row=0, column=1, padx=5, pady=5)
+player_name_combobox = ttk.Combobox(root, values=get_player_names())
+player_name_combobox.grid(row=0, column=1, padx=5, pady=5)
+player_name_combobox.current(0)
 
 season_id_label = ttk.Label(root, text="Season ID:")
 season_id_label.grid(row=1, column=0, padx=5, pady=5)
