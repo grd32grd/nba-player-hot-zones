@@ -12,7 +12,7 @@ This Python program utilizes pandas dataframes and matplotlib graphics to analyz
     ```
     python nba_player_hot_zones.py
     ```
-3. Fill in the necessary inputs from the GUI that pops up. Click the Generate button when done to view the player;s shot charts and hot zones.
+3. Fill in the necessary inputs from the GUI that pops up. Click the Generate button when done to view the player's shot charts and hot zones.
 
 ## Dependencies
 - pandas
