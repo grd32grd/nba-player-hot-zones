@@ -24,6 +24,12 @@ def get_player_names():
     active_players = [player for player in players.get_players() if player['is_active']]
     return [player['full_name'] for player in active_players]
 
+#Function that filters combobox options based on typed text
+def update_combobox(event):
+    typed_text = event.widget.get()
+    filtered_names = [name for name in get_player_names() if typed_text.lower() in name.lower()]
+    event.widget['values'] = filtered_names
+
 #Function that takes in basic player info, calculates individual and league average stats, and returns a player's hot and cold zones.
 def player_shotzonedetail(player_name, season_id, season_type):
 
@@ -193,7 +199,7 @@ def generate_graphic():
 
     #Draws our court.
     draw_court(None, 'black', 2, False, zone_colors, zone_difference)
-    plt.title(f"{player_name} Hot Zones {season_id} {season_type}")
+    plt.title(f"{player_name} Hot Zones | {season_id} {season_type}")
     plt.show()
 
 
@@ -207,19 +213,20 @@ player_name_label.grid(row=0, column=0, padx=5, pady=5)
 player_name_combobox = ttk.Combobox(root, values=get_player_names())
 player_name_combobox.grid(row=0, column=1, padx=5, pady=5)
 player_name_combobox.current(0)
+player_name_combobox.bind('<KeyRelease>', update_combobox)
 
-season_id_label = ttk.Label(root, text="Season ID:")
+season_id_label = ttk.Label(root, text="Season (####-##):")
 season_id_label.grid(row=1, column=0, padx=5, pady=5)
 season_id_entry = ttk.Entry(root)
 season_id_entry.grid(row=1, column=1, padx=5, pady=5)
 
 season_type_label = ttk.Label(root, text="Season Type:")
-season_type_label.grid(row=2, column=0, padx=5, pady=5)
+season_type_label.grid(row=2, column=0, padx=0, pady=0)
 season_type_combobox = ttk.Combobox(root, values=["Regular Season", "Playoffs"])
 season_type_combobox.grid(row=2, column=1, padx=5, pady=5)
 season_type_combobox.current(0)
 
-generate_button = ttk.Button(root, text="Generate Plot", command=generate_graphic)
+generate_button = ttk.Button(root, text="Generate", command=generate_graphic)
 generate_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
 
 #Running the GUI

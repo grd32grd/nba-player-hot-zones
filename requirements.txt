@@ -1,0 +1,5 @@
+numpy==1.24.3
+pandas==1.2.1
+matplotlib==3.3.4
+seaborn==0.11.1
+nba-api==1.1.9
